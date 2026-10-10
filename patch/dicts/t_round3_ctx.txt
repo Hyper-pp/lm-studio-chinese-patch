@@ -1,0 +1,5 @@
+ModelDomainType.llm,"LLMs"	ModelDomainType.llm,"大语言模型"
+ModelDomainType.embedding,"Text Embedding"	ModelDomainType.embedding,"文本嵌入"
+ModelDomainType.drafter,"Drafters"	ModelDomainType.drafter,"草稿模型"
+"label.close","Close"	"label.close","关闭"
+"label.closeButton","Close"	"label.closeButton","关闭"

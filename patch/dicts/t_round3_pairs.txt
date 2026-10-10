@@ -1,0 +1,9 @@
+Show warnings	显示警告
+Hide warnings	隐藏警告
+ Use in New Chat	 在新对话中使用
+Add instructions…	添加指令…
+Edit system prompt	编辑系统提示词
+View All	查看全部
+Load Model	加载模型
+Show in File Explorer	在文件资源管理器中显示
+Reveal in Finder	在访达中显示

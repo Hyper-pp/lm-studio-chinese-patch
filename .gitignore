@@ -1,0 +1,4 @@
+node_modules/
+*.log
+_tmp_check.js
+check_out.txt

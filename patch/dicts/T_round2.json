@@ -1,0 +1,13 @@
+{
+"Send a message to the model...": "给模型发送消息……",
+"Drop file to attach it to the chat": "松开以附加文件到对话",
+"Pick a model ": "选择模型 ",
+"Unnamed Chat": "未命名对话",
+"New Folder": "新建文件夹",
+"Empty Folder": "空文件夹",
+"Folder is Empty": "文件夹为空",
+"Enable Thinking": "启用思考",
+"Controls whether the model will think before replying": "控制模型回复前是否先思考",
+"Controls whether thinking history will be truncated to save context space": "控制是否截断思考历史以节省上下文空间",
+"Unrestricted": "无限制"
+}

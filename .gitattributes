@@ -1,0 +1,5 @@
+install.bat text eol=crlf
+*.sh text eol=lf
+*.js text
+*.json text
+*.md text
