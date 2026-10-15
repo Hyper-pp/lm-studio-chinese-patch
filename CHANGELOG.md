@@ -7,6 +7,8 @@
 ### 首个公开发布版本（实测于 LM Studio 0.4.25 / Windows x64）
 
 #### 新增
+- 一键安装脚本 `install.bat`（Windows，自动提权与 Node 检测）/ `install.sh`（macOS / Linux）
+- 一键回滚脚本 `uninstall.bat`（Windows）
 - 核心补丁脚本 `patch/apply-patch.js`：8 步替换管线，约 6700 处界面文本汉化
 - 翻译字典 2166 条（基础 1953 + 参数键 196 + 杂项 17）：
   - 基础字典含源自 C2H12O6/lm-studio-simplified-chinese 的 1084 条（MIT）

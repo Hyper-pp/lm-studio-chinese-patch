@@ -47,6 +47,8 @@ node tools/patch-model-yamls.js
 
 ## 回滚
 
+Windows 下双击 `uninstall.bat` 即可；或者命令行：
+
 ```bash
 node patch/apply-patch.js --restore
 ```
