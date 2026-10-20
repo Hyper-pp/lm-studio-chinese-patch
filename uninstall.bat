@@ -28,7 +28,7 @@ rem ---- self-elevate if not admin (some install dirs need it) ----
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo [..] Requesting administrator rights (write access to install dir)...
-    powershell -NoProfile -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c cd /d \"%~dp0\" && node \"patch\apply-patch.js\" --restore && pause' -Verb RunAs"
+    powershell -NoProfile -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c cd /d \"%~dp0\" && node \"patch\apply-patch.js\" --restore && node \"patch\patch-extra.js\" --restore && pause' -Verb RunAs"
     if %errorlevel% neq 0 (
         echo [ERROR] Elevation was cancelled.
         pause
@@ -48,8 +48,14 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
+node "patch\patch-extra.js" --restore
+if %errorlevel% neq 0 (
+    echo.
+    echo [WARN] Extra restore reported errors. Check messages above; backups live in
+    echo        %USERPROFILE%\.lmstudio-chinese-patch\backups\
+)
 
 echo.
-echo  Done. Original file restored. Start LM Studio again.
+echo  Done. Original files restored. Start LM Studio again.
 echo.
 pause

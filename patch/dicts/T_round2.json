@@ -9,5 +9,10 @@
 "Enable Thinking": "启用思考",
 "Controls whether the model will think before replying": "控制模型回复前是否先思考",
 "Controls whether thinking history will be truncated to save context space": "控制是否截断思考历史以节省上下文空间",
-"Unrestricted": "无限制"
+"Unrestricted": "无限制",
+"Tools you allow to run without confirmation will appear here": "你允许免确认运行的工具将显示在这里",
+"Allow the following tools to run without confirmation": "允许以下工具免确认运行",
+"Configure load-time speculative decoding.": "配置加载时的投机解码。",
+"Type to filter plugins...": "输入以筛选插件……",
+"Maximum number of context checkpoints to keep per llama-server slot. 0 disables checkpoints.": "每个 llama-server 槽保留的最大上下文检查点数。0 表示禁用检查点。"
 }

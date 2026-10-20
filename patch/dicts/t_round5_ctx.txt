@@ -1,0 +1,40 @@
+case"rag-v1":return"Chat with Files"	case"rag-v1":return"文件聊天"
+case"js-code-sandbox":return"Code Interpreter"	case"js-code-sandbox":return"代码解释器"
+,"Developer Docs"]	,"开发者文档"]
+developer:"Developer Docs"	developer:"开发者文档"
+,"System Prompt"]	,"系统提示"]
+,"Server Settings"]	,"服务器设置"]
+,"Local Server"]	,"本地服务器"]
+server:"Local Server"	server:"本地服务器"
+name:"Integrations"	name:"集成"
+)," ","Integrations"	)," ","集成"
+?"Reasoning":null	?"推理":null
+??"Enter text here"	??"在此输入文本"
+placeholder:'Example, "Only answer in rhymes"'	placeholder:'例如："只用押韵句回答"'
+," Install"	," 安装"
+Info:{displayName:"Info"	Info:{displayName:"信息"
+Load:{displayName:"Load"	Load:{displayName:"加载"
+Inference:{displayName:"Inference"	Inference:{displayName:"推理"
+Overrides:{displayName:"Overrides"	Overrides:{displayName:"覆盖设置"
+children:"Info"	children:"信息"
+children:"Load"	children:"加载"
+children:"Inference"	children:"推理"
+children:"Overrides"	children:"覆盖设置"
+hint:de?"Developer"	hint:de?"开发者"
+APP_PAGE_PATHS.developer,"Developer"	APP_PAGE_PATHS.developer,"开发者"
+APP_PAGE_PATHS.settings,"Settings"	APP_PAGE_PATHS.settings,"设置"
+APP_PAGE_PATHS.chat,"Chat"	APP_PAGE_PATHS.chat,"对话"
+hint:de?"Chat"	hint:de?"对话"
+displayName:de?void 0:"Chat"	displayName:de?void 0:"对话"
+size:16}),"Chat"]	size:16}),"对话"]
+advanced:"Advanced"	advanced:"高级"
+core:"Core"	core:"核心"
+"openai-compat":"OpenAI Compatible Endpoints"	"openai-compat":"OpenAI 兼容端点"
+"anthropic-compat":"Anthropic Compatible Endpoints"	"anthropic-compat":"Anthropic 兼容端点"
+speculativeDecoding:"Speculative Decoding"	speculativeDecoding:"投机解码"
+mtpSpeculativeDecoding:"MTP Speculative Decoding"	mtpSpeculativeDecoding:"MTP 投机解码"
+dflashSpeculativeDecoding:"DFlash Speculative Decoding"	dflashSpeculativeDecoding:"DFlash 投机解码"
+dsparkSpeculativeDecoding:"DSpark Speculative Decoding"	dsparkSpeculativeDecoding:"DSpark 投机解码"
+sidecarSpeculativeDecodingAutoFit:"Sidecar Speculative Decoding AutoFit"	sidecarSpeculativeDecodingAutoFit:"Sidecar 投机解码自动调整"
+"aria-label":"Clear plugin filter"	"aria-label":"清除插件筛选"
+"aria-label":"Plugin options"	"aria-label":"插件选项"

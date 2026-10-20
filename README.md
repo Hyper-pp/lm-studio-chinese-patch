@@ -1,22 +1,22 @@
 # LM Studio 简体中文补充补丁
 
-补齐 LM Studio 官方中文（Beta）未覆盖的界面英文。在官方中文基础上额外替换约 6700 处文本，覆盖参数面板、模型管理、MCP、右键菜单、设置页等区域。
+补齐 LM Studio 官方中文（Beta）未覆盖的界面英文。在官方中文基础上额外替换约 7200 处文本，覆盖参数面板、模型管理、MCP、右键菜单、设置页等区域。
 
-实测版本：**LM Studio 0.4.25**（Windows x64），其他版本见[兼容性](#兼容性)。
+实测版本：**LM Studio 0.4.25+1**（Windows x64），其他版本见[兼容性](#兼容性)。
 
 LM Studio 内置的简体中文翻译只覆盖部分界面，选了中文后仍会看到大量英文——右侧参数面板（温度、采样、GPU 卸载、KV 缓存等）、右键菜单、部分按钮和状态文本。这些文本硬编码在程序文件里，不经过翻译系统，本补丁负责替换它们。
 
 ## 功能
 
-- 约 6700 处替换：对话、模型管理、参数面板、MCP、本地服务、设置页、LM Link、转录等
+- 约 7200 处替换：对话、模型管理、参数面板、MCP、本地服务、设置页、LM Link、转录等（含按钮无障碍标签与悬停提示、内置插件包检索设置、主进程开关文案）
 - 参数面板 196 个配置键的标题与说明（官方翻译缺失部分）
 - 自动备份原版文件，`--restore` 一键回滚
-- 可重复运行，不会叠加损坏
+- 可重复运行，不会叠加损坏（所有替换始终从原版备份重算）
 - 写盘前自动校验文件完整性，异常时拒绝写入
 
 ## 环境要求
 
-- LM Studio 0.4.25
+- LM Studio 0.4.25+1
 - [Node.js](https://nodejs.org) 16 或更高（无其他依赖）
 
 ## 安装
@@ -24,14 +24,15 @@ LM Studio 内置的简体中文翻译只覆盖部分界面，选了中文后仍�
 ### Windows
 
 1. 完全退出 LM Studio（右键托盘图标 → Quit，或任务管理器结束全部 `LM Studio.exe`）
-2. 双击 `install.bat`，按提示授权
+2. 双击 `install.bat`，按提示授权（会依次执行界面主包、主进程/插件包、模型包三步）
 3. 重新打开 LM Studio
 
 ### 手动（Windows / macOS / Linux）
 
 ```bash
 node patch/apply-patch.js --dry-run    # 预览替换数量，不写任何文件
-node patch/apply-patch.js              # 应用
+node patch/apply-patch.js              # 应用（界面主包）
+node patch/patch-extra.js              # 应用（主进程 + 内置插件包）
 node patch/apply-patch.js --path "安装目录"   # 自动检测失败时手动指定
 ```
 
@@ -51,6 +52,7 @@ Windows 下双击 `uninstall.bat` 即可；或者命令行：
 
 ```bash
 node patch/apply-patch.js --restore
+node patch/patch-extra.js --restore
 ```
 
 原版备份在 `~/.lmstudio-chinese-patch/backups/`。补丁只改程序界面文件，模型、对话、设置数据（`~/.lmstudio`）不受影响。
@@ -65,10 +67,11 @@ LM Studio 升级会覆盖补丁。重新运行 `node patch/apply-patch.js` 即�
 
 LM Studio 的界面文本分三层：i18n 翻译键（官方 zh_CN 已覆盖约 98%）、硬编码英文（约 3100 处，不走翻译系统）、Chromium 原生对话框（本补丁不涉及）。
 
-补丁按 8 个步骤依次处理 i18n 初始语言、JSX 属性、数组子元素、参数面板键值对、调用默认值、唯一短语和上下文短语。替换过程中有三道保护：
+补丁按 10 个步骤依次处理 i18n 初始语言、JSX 属性、数组子元素、参数面板键值对、调用默认值、唯一短语、上下文短语、无障碍标签与悬停提示。替换过程中有四道保护：
 
 - **转义感知**：值里含转义序列时跳过，避免破坏内嵌 JSON
-- **逻辑值黑名单**：约 27 个字符串同时充当界面文本和逻辑标识（如 tab 标识 `Inference`、状态机 `loading`、按键 `Enter`），翻译它们会导致参数面板消失、回车失效，因此保持英文
+- **逻辑值黑名单**：约 3650 个字符串同时充当界面文本和逻辑标识（如 tab 标识 `Inference`、状态机 `loading`、按键 `Enter`），翻译它们会导致参数面板消失、回车失效，因此保持英文
+- **只新增不覆盖**：源串含中日韩字符的规则一律跳过，避免把官方译文或语言名（如「简体中文 (Beta)」）二次覆盖
 - **写盘校验**：内嵌 JSON 全量解析 + 文件语法检查，不通过则拒绝写入，写后异常自动回滚
 
 另外，数学公式库（KaTeX）与代码编辑器（Monaco）的内部说明文字、以及运行时动态生成的文本（如消息上方的耗时统计）不在汉化范围内。
@@ -77,12 +80,12 @@ LM Studio 的界面文本分三层：i18n 翻译键（官方 zh_CN 已覆盖约 
 
 | 版本 | 状态 |
 |---|---|
-| 0.4.25 (Windows x64) | 已充分测试 |
+| 0.4.25+1 (Windows x64) | 已充分测试 |
 | 0.4.x 其他小版本 | 先跑 `--dry-run` 自检（见下） |
 | 0.3.x 及更早 | 未测试 |
 | macOS / Linux | 结构相同、路径已适配，未实测 |
 
-自检方法：`node patch/apply-patch.js --dry-run`，输出中 `JSON 校验` 失败为 0、替换总数在 6000 以上即可放心应用。
+自检方法：`node patch/apply-patch.js --dry-run`，输出中 `JSON 校验` 失败为 0、替换总数在 7000 以上即可放心应用。
 
 ## 为新版本适配
 
@@ -96,6 +99,7 @@ LM Studio 的界面文本分三层：i18n 翻译键（官方 zh_CN 已覆盖约 
 | `diag-risky-all.js` | 重新生成逻辑值黑名单（新版本必跑） |
 | `merge-dicts.js` | 合并字典 |
 | `patch-model-yamls.js` | 汉化模型包 model.yaml |
+| `run-patch.bat` | 批量运行器：依次跑三个脚本并汇总日志到 `tools/patch-run.log`（无需系统 PATH 里有 Node） |
 
 > 工具脚本顶部的路径常量默认为 `D:/Program Files/LM Studio`，按实际安装路径修改。新版本适配时**必须重跑 `diag-risky-all.js`**，否则新增的逻辑标识可能被误翻。
 
@@ -117,11 +121,12 @@ LM Studio 有托盘进程，右键托盘图标 Quit 后重新打开。
 
 ```
 ├── README.md / LICENSE / CHANGELOG.md
-├── install.bat / install.sh
+├── install.bat / install.sh / uninstall.bat
 ├── patch/
-│   ├── apply-patch.js          # 核心补丁脚本
+│   ├── apply-patch.js          # 核心补丁脚本（界面主包）
+│   ├── patch-extra.js          # 主进程 + 内置插件包
 │   └── dicts/                  # 翻译字典 + 逻辑值黑名单
-└── tools/                      # 升级适配工具
+└── tools/                      # 升级适配工具 + 批量运行器
 ```
 
 ## 致谢

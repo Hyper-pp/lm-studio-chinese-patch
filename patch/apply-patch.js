@@ -14,10 +14,12 @@
  * 安全闸门（按顺序）：
  *   1. 基线固定：始终从原版备份重算，幂等，绝不在旧补丁上叠加
  *   2. 转义感知：值里含 \\" \\\\ 等转义序列的一律跳过（曾导致 JSON 断裂白屏）
- *   3. 逻辑值黑名单：Inference/Overrides/loading/ready/Enter 等 27 个字符串同时充当
+ *   3. 逻辑值黑名单：Inference/Overrides/loading/ready/Enter 等同时充当
  *      tabId/panelId、状态机 case、Zod literal、键盘 key —— 翻了它们会导致
  *      右侧参数面板消失、点设置无反应、回车失效（语法与 JSON 校验都查不出此类错误）
- *   4. 产出前强制校验：全部内联 JSON 可解析 + 整文件语法合法，任一不过拒绝写盘
+ *   4. 只新增不覆盖（CJK 闸门）：字典 key/上下文含中文的目标一律跳过——
+ *      那意味着原文已是中文（如语言下拉"简体中文 (Beta)"），再替换会二次覆盖
+ *   5. 产出前强制校验：全部内联 JSON 可解析 + 整文件语法合法，任一不过拒绝写盘
  *
  * 用法：
  *   node apply-patch.js                 # 应用汉化（自动检测安装目录）
@@ -90,7 +92,15 @@ const T_round2 = loadJSON('T_round2.json');           // 聊天输入框/侧栏�
 const T_missing2 = loadJSON('T_missing2.json');       // i18n 默认值补键
 const r3_pairs = readPairs('t_round3_pairs.txt');     // 全局唯一短语
 const r3_ctx = readPairs('t_round3_ctx.txt');         // 上下文限定短语
+const r5_pairs = readPairs('t_round5_pairs.txt');     // round5 唯一短语（带引号防标识符误伤）
+const r5_ctx = readPairs('t_round5_ctx.txt');         // round5 上下文限定短语
+const r6_ctx = readPairs('t_round6_aria.txt');        // round6 无障碍标签/提示/占位（形态精确匹配）
 const LOGIC_VALUES = new Set(loadJSON('logic-values.json'));  // 逻辑值黑名单（必须先跑 tools/diag-risky-all.js 生成）
+
+// 「只新增不覆盖」闸门：key/上下文中含 CJK 的目标一律跳过——
+// 含中文的 key 意味着原文已是中文（如语言下拉的"简体中文 (Beta)"），
+// 再替换会把官方译文/ Beta 标记二次覆盖掉（2026-10 事故根因）。
+const CJK = /[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/;
 
 // ---------- 恢复 ----------
 if (RESTORE) {
@@ -123,23 +133,26 @@ if (content.includes(i18nOld)) {
   count++; console.log('Step1 i18n 切换: 已应用');
 } else if (content.includes('lng:"zh_CN"')) console.log('Step1 i18n 切换: 已是中文（跳过）');
 
-// ---------- Step2: JSX 属性替换（带逻辑值黑名单 + 转义跳过） ----------
+// ---------- Step2: JSX 属性替换（带逻辑值黑名单 + 转义跳过 + CJK 闸门） ----------
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const attrs = ['children', 'title', 'label', 'tooltip', 'placeholder',
-  'aria-label', 'description', 'prettyName', 'subtitle', 'sectionTitle', 'labelSubtext'];
-let s2 = 0, s2skip = 0;
+  'aria-label', 'description', 'prettyName', 'subtitle', 'sectionTitle', 'labelSubtext',
+  'displayName', 'sectionNameTranslationKeyOrTitle', 'sectionPrettyName', 'routeName', 'alt'];
+let s2 = 0, s2skip = 0, s2cjk = 0;
 content = content.replace(new RegExp('(?:' + attrs.join('|') + '):"([^"]+)"', 'g'), (m, en) => {
+  if (CJK.test(en)) { s2cjk++; return m; }              // 只新增不覆盖：原文已中文，不碰
   if (dict[en] === undefined) return m;
   if (LOGIC_VALUES.has(en)) { s2skip++; return m; }   // 逻辑标识不翻
   s2++;
   return `${m.slice(0, m.indexOf(':"'))}:"${dict[en]}"`;
 });
-console.log(`Step2 属性替换: ${s2} 处 (逻辑值跳过 ${s2skip})`);
+console.log(`Step2 属性替换: ${s2} 处 (逻辑值跳过 ${s2skip}, CJK 跳过 ${s2cjk})`);
 count += s2;
 
 // ---------- Step3: children:["..."] 数组首元素 ----------
-let s3 = 0;
+let s3 = 0, s3cjk = 0;
 for (const [en, zh] of Object.entries(dict)) {
+  if (CJK.test(en)) { s3cjk++; continue; }             // 只新增不覆盖
   if (LOGIC_VALUES.has(en)) continue;
   const old = `children:["${en}"`;
   if (content.includes(old)) {
@@ -147,7 +160,7 @@ for (const [en, zh] of Object.entries(dict)) {
     content = content.split(old).join(`children:["${zh}"`);
   }
 }
-console.log(`Step3 数组首元素: ${s3} 处`);
+console.log(`Step3 数组首元素: ${s3} 处 (CJK 跳过 ${s3cjk})`);
 count += s3;
 
 // ---------- Step4: 常量赋值 =“English” —— 已禁用 ----------
@@ -174,12 +187,13 @@ console.log(`Step5 键值对替换: ${s5} 处 (跳过 ${s5skip})`);
 count += s5;
 
 // ---------- Step6: 长短语直替（≥10 字符防误伤） ----------
-let s6 = 0;
+let s6 = 0, s6cjk = 0;
 for (const [en, zh] of Object.entries(T_round2)) {
+  if (CJK.test(en)) { s6cjk++; continue; }             // 只新增不覆盖
   if (en.length < 10 || LOGIC_VALUES.has(en)) continue;
   if (content.includes(en)) { s6 += content.split(en).length - 1; content = content.split(en).join(zh); }
 }
-console.log(`Step6 短语直替: ${s6} 处`);
+console.log(`Step6 短语直替: ${s6} 处 (CJK 跳过 ${s6cjk})`);
 count += s6;
 
 // ---------- Step7: i18n 调用默认值补键（"key","English Default" → 中文） ----------
@@ -198,16 +212,46 @@ console.log(`Step7 默认键补齐: ${s7} 处 (跳过 ${s7skip})`);
 count += s7;
 
 // ---------- Step8: 全局唯一短语 + 上下文限定替换 ----------
-let s8a = 0, s8b = 0;
+let s8a = 0, s8b = 0, s8cjk = 0;
 for (const [en, zh] of r3_pairs) {
+  if (CJK.test(en)) { s8cjk++; continue; }             // 只新增不覆盖
   if (LOGIC_VALUES.has(en)) continue;
   if (content.includes(en)) { s8a += content.split(en).length - 1; content = content.split(en).join(zh); }
 }
 for (const [ctx, zh] of r3_ctx) {
+  if (CJK.test(ctx)) { s8cjk++; continue; }            // 只新增不覆盖
   if (content.includes(ctx)) { s8b += content.split(ctx).length - 1; content = content.split(ctx).join(zh); }
 }
-console.log(`Step8 唯一短语: ${s8a} 处, 上下文限定: ${s8b} 处`);
+console.log(`Step8 唯一短语: ${s8a} 处, 上下文限定: ${s8b} 处 (CJK 跳过 ${s8cjk})`);
 count += s8a + s8b;
+
+// ---------- Step9: round5 短语（属性名扩展后新增的显示形态） ----------
+// t_round5_pairs.txt 的 key 自带双引号（如 "Integrations"），只匹配完整引用令牌，
+// 不会误伤标识符子串（ChatAttachmentAndIntegrationsControls）；仍过逻辑值黑名单。
+// t_round5_ctx.txt 为上下文限定（枚举/条件表达式/映射值等 pairs 打不到的形态），不过黑名单。
+let s9a = 0, s9b = 0, s9cjk = 0;
+for (const [en, zh] of r5_pairs) {
+  if (CJK.test(en)) { s9cjk++; continue; }
+  if (LOGIC_VALUES.has(en)) continue;
+  if (content.includes(en)) { s9a += content.split(en).length - 1; content = content.split(en).join(zh); }
+}
+for (const [ctx, zh] of r5_ctx) {
+  if (CJK.test(ctx)) { s9cjk++; continue; }
+  if (content.includes(ctx)) { s9b += content.split(ctx).length - 1; content = content.split(ctx).join(zh); }
+}
+console.log(`Step9 round5 唯一短语: ${s9a} 处, 上下文限定: ${s9b} 处 (CJK 跳过 ${s9cjk})`);
+count += s9a + s9b;
+
+// ---------- Step10: round6 无障碍标签 / 提示 / 占位 ----------
+// t_round6_aria.txt 的 key 带完整形态前缀（"aria-label":"X" / tooltip:"X" / placeholder:"X"），
+// 不与同名标识符或正文发生误伤；显示专用，不过逻辑值黑名单。
+let s10 = 0, s10cjk = 0;
+for (const [en, zh] of r6_ctx) {
+  if (CJK.test(en)) { s10cjk++; continue; }
+  if (content.includes(en)) { s10 += content.split(en).length - 1; content = content.split(en).join(zh); }
+}
+console.log(`Step10 round6 无障碍/提示/占位: ${s10} 处 (CJK 跳过 ${s10cjk})`);
+count += s10;
 
 console.log(`\n共替换: ${count} 处`);
 if (DRY) { console.log('\n[dry-run] 未写入任何文件'); process.exit(0); }

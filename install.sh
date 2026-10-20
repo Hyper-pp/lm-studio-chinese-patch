@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 
 echo ""
 echo " ============================================"
-echo "  LM Studio Simplified Chinese Patch v1.0.0"
+echo "  LM Studio Simplified Chinese Patch v1.1.0"
 echo " ============================================"
 echo ""
 
@@ -16,7 +16,11 @@ fi
 echo "[OK] Node.js $(node -v)"
 
 node patch/apply-patch.js
+node patch/patch-extra.js || echo "[WARN] extra patch skipped (main window patch stays applied)"
+
+# model yaml custom-fields: per-machine data, failure is non-fatal
+node tools/patch-model-yamls.js || echo "[WARN] model yaml patch skipped (non-fatal)"
 
 echo ""
 echo " Done. Fully quit LM Studio and start it again."
-echo " Rollback: node patch/apply-patch.js --restore"
+echo " Rollback: node patch/apply-patch.js --restore  +  node patch/patch-extra.js --restore"
